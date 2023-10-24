@@ -27,7 +27,6 @@ static const char *TAG = "Touch pad";
 
 #define SECOND (1000 / portTICK_PERIOD_MS)
 
-static bool s_pad_activated[TOUCH_PAD_N];
 static uint32_t s_pad_init_val[TOUCH_PAD_N];
 
 /*
@@ -50,6 +49,14 @@ static void tp_example_set_thresholds(void)
         ESP_LOGI(TAG, "test init: touch pad [%d] val is %d", i, touch_value);
         // set interrupt threshold.
         ESP_ERROR_CHECK(touch_pad_set_thresh(i, touch_value * 2 / 3));
+    }
+}
+
+static void tp_example_touch_pad_init(void)
+{
+    for (int i = 0; i < TOUCH_PAD_MAX; i++)
+    {
+        touch_pad_config(i, TOUCH_THRESH_NO_USE);
     }
 }
 
@@ -83,13 +90,11 @@ void app_main(void)
     touch_pad_filter_start(TOUCHPAD_FILTER_TOUCH_PERIOD);
     // Set thresh hold
     tp_example_set_thresholds();
-    // Register touch interrupt ISR
-    touch_pad_isr_register(tp_example_rtc_intr, NULL);
-    touch_pad_intr_enable();
     ESP_LOGI(TAG, "Finished initializing touchpad");
-    // Start a task to show what pads have been touched
-    // xTaskCreate(&tp_example_read_task, "touch_pad_read_task", 4096, NULL, tskIDLE_PRIORITY, NULL);
 
+    const int wakeup_time_sec = 20;
+    printf("Enabling timer wakeup, %ds\n", wakeup_time_sec);
+    esp_sleep_enable_timer_wakeup(wakeup_time_sec * 1000000);
     vTaskDelay(10 * SECOND);
     ESP_LOGI(TAG, "Going to sleep now");
     esp_err_t err = esp_sleep_enable_touchpad_wakeup();
