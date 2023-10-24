@@ -1,2 +1,2 @@
-idf_component_register(SRCS "tp_interrupt_main.c"
+idf_component_register(SRCS "touch_wakeup.c"
                     INCLUDE_DIRS ".")
